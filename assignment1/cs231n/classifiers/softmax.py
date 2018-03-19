@@ -25,12 +25,32 @@ def softmax_loss_naive(W, X, y, reg):
   dW = np.zeros_like(W)
 
   #############################################################################
-  # TODO: Compute the softmax loss and its gradient using explicit loops.     #
   # Store the loss in loss and the gradient in dW. If you are not careful     #
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  pass
+  num_train = X.shape[0]
+  num_classes = W.shape[1]
+  for i in range(0, num_train):
+    scores = X[i].dot(W)
+    C = np.max(scores)
+    scores -= C
+    correct_class_score = scores[y[i]]
+    p = np.exp(correct_class_score) / np.sum(np.exp(scores))
+    loss += -np.log(p)
+
+    for j in range(0, num_classes):
+      j_score = np.exp(scores[j]) / np.sum(np.exp(scores))
+      dW[:, j] += (j_score - (j == y[i])) * X[i]
+
+  # Right now the loss is a sum over all training examples, but we want it
+  # to be an average instead so we divide by num_train.
+  loss /= num_train
+  dW /= num_train
+
+  # Add regularization to the loss.
+  loss += reg * np.sum(W * W)
+  dW += 2 * reg * W
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
@@ -45,16 +65,35 @@ def softmax_loss_vectorized(W, X, y, reg):
   Inputs and outputs are the same as softmax_loss_naive.
   """
   # Initialize the loss and gradient to zero.
-  loss = 0.0
-  dW = np.zeros_like(W)
 
   #############################################################################
-  # TODO: Compute the softmax loss and its gradient using no explicit loops.  #
   # Store the loss in loss and the gradient in dW. If you are not careful     #
   # here, it is easy to run into numeric instability. Don't forget the        #
   # regularization!                                                           #
   #############################################################################
-  pass
+
+  num_train = X.shape[0] #train
+  num_classes = W.shape[1] # classes
+  scores = X.dot(W)
+  C = np.max(scores, axis=1)
+  scores = (scores.T - C).T
+  p = (np.exp(scores).T / np.sum(np.exp(scores), axis=1)).T
+  y_i_p = p[np.arange(p.shape[0]), y]
+  loss = np.sum(-np.log(y_i_p))
+
+  y_mat = np.zeros(shape=(num_train, num_classes))
+  y_mat[range(num_train), y] = 1
+  dW = X.T.dot(p)
+  dW -= X.T.dot(y_mat)
+
+  # Right now the loss is a sum over all training examples, but we want it
+  # to be an average instead so we divide by num_train.
+  loss /= num_train
+  dW /= num_train
+
+  # Add regularization to the loss.
+  loss += reg * np.sum(W * W)
+  dW += 2 * reg * W
   #############################################################################
   #                          END OF YOUR CODE                                 #
   #############################################################################
