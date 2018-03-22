@@ -83,8 +83,8 @@ def softmax_loss_vectorized(W, X, y, reg):
 
   y_mat = np.zeros(shape=(num_train, num_classes))
   y_mat[range(num_train), y] = 1
-  dW = X.T.dot(p)
-  dW -= X.T.dot(y_mat)
+  dW = X.T.dot(p - y_mat)
+  #dW -= X.T.dot(y_mat)
 
   # Right now the loss is a sum over all training examples, but we want it
   # to be an average instead so we divide by num_train.
